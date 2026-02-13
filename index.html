@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculadora Comercial CR</title>
+    <style>
+        :root { 
+            --primary: #2563eb; 
+            --success: #16a34a; 
+            --danger: #dc2626; 
+            --warning: #f59e0b;
+            --bg: #f1f5f9; 
+        }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body { 
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            padding: 15px; 
+            background-color: var(--bg); 
+            color: #1e293b; 
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .container { max-width: 500px; margin: 0 auto; }
+
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            margin-bottom: 20px; 
+            border: 1px solid #e2e8f0;
+        }
+
+        h2 { 
+            margin-top: 0; 
+            font-size: 1.1rem; 
+            color: #334155; 
+            border-bottom: 2px solid #f1f5f9; 
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+        label { 
+            display: block; 
+            font-size: 0.75rem; 
+            font-weight: 800; 
+            color: #64748b; 
+            margin-bottom: 6px; 
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            background-color: #ffffff;
+            color: #1e293b;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { outline: none; border-color: var(--primary); }
+
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 1rem;
+            margin-top: 5px;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        button:active { transform: scale(0.97); opacity: 0.9; }
+
+        .result-box { 
+            margin-top: 15px; 
+            padding: 15px; 
+            background: #f8fafc; 
+            border-left: 5px solid var(--primary); 
+            border-radius: 8px; 
+            display: none; 
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .res-line { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.95rem; }
+        
+        .total-line { 
+            font-size: 1.3rem; 
+            font-weight: 800; 
+            color: var(--success); 
+            border-top: 2px dashed #e2e8f0; 
+            padding-top: 12px; 
+            margin-top: 10px; 
+        }
+
+        .tc-header {
+            background: #e0f2fe;
+            border: 1px solid #bae6fd;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="tc-header">
+        <label style="color: #0369a1;">💵 Tipo de Cambio (1 USD a CRC)</label>
+        <input type="number" id="tcManual" value="510" style="color: #0369a1; border-color: #7dd3fc; font-weight: bold;">
+    </div>
+
+    <div class="card">
+        <h2>🚀 1. Precio de Venta (IVA CR)</h2>
+        <div class="grid">
+            <div>
+                <label>Costo</label>
+                <input type="number" id="costo" placeholder="0.00" inputmode="decimal">
+            </div>
+            <div>
+                <label>Moneda</label>
+                <select id="moneda">
+                    <option value="CRC">Colones (₡)</option>
+                    <option value="USD">Dólares ($)</option>
+                </select>
+            </div>
+        </div>
+        <div class="grid">
+            <div>
+                <label>% Utilidad</label>
+                <input type="number" id="margen" value="30" inputmode="numeric">
+            </div>
+            <div>
+                <label>Impuesto IVA</label>
+                <select id="tipoIva">
+                    <option value="13">13% General</option>
+                    <option value="4">4% Salud</option>
+                    <option value="2">2% Medicinas</option>
+                    <option value="1">1% Canasta</option>
+                    <option value="0">Exento</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="calcVenta()">Generar Precio Final</button>
+        <div id="resVenta" class="result-box">
+            <div class="res-line"><span>Costo en ₡:</span> <span id="vCostoC"></span></div>
+            <div class="res-line"><span>Utilidad:</span> <span id="vGanancia"></span></div>
+            <div class="res-line"><span>Monto IVA:</span> <span id="vIva"></span></div>
+            <div class="res-line total-line"><span>VENTA: ₡</span><span id="vFinal"></span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🔍 2. ¿Qué % de descuento es?</h2>
+        <div class="grid">
+            <div><label>P. Original</label><input type="number" id="pOrig" inputmode="decimal"></div>
+            <div><label>P. Rebajado</label><input type="number" id="pRebaja" inputmode="decimal"></div>
+        </div>
+        <button onclick="calcPorcentaje()" style="background: var(--warning);">Analizar %</button>
+        <div id="resPorc" class="result-box" style="border-left-color: var(--warning);">
+            <div class="res-line"><span>Ahorro real:</span> <span id="pAhorro"></span></div>
+            <div class="res-line total-line" style="color: var(--warning);"><span>DESCUENTO:</span> <span id="pResultado"></span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>💰 3. Aplicar Descuento a Precio</h2>
+        <div class="grid">
+            <div><label>Precio Actual</label><input type="number" id="pActual" inputmode="decimal"></div>
+            <div><label>% Descuento</label><input type="number" id="pDesc" inputmode="numeric"></div>
+        </div>
+        <button onclick="calcRebaja()" style="background: var(--danger);">Calcular Rebaja</button>
+        <div id="resFijo" class="result-box" style="border-left-color: var(--danger);">
+            <div class="res-line"><span>Usted ahorra:</span> <span id="fAhorro"></span></div>
+            <div class="res-line total-line" style="color: var(--danger);"><span>PAGAR: ₡</span><span id="fFinal"></span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Formateador estándar para Costa Rica
+    var f = new Intl.NumberFormat('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    function calcVenta() {
+        var costo = parseFloat(document.getElementById('costo').value);
+        var tc = parseFloat(document.getElementById('tcManual').value);
+        var moneda = document.getElementById('moneda').value;
+        var margen = parseFloat(document.getElementById('margen').value) || 0;
+        var ivaP = parseFloat(document.getElementById('tipoIva').value);
+
+        if(!costo || !tc) return alert("Por favor ingresa el costo y tipo de cambio");
+
+        var costoC = (moneda === "USD") ? (costo * tc) : costo;
+        var ganancia = costoC * (margen / 100);
+        var subtotal = costoC + ganancia;
+        var ivaMonto = subtotal * (ivaP / 100);
+        var totalFinal = subtotal + ivaMonto;
+
+        document.getElementById('vCostoC').innerText = "₡" + f.format(costoC);
+        document.getElementById('vGanancia').innerText = "₡" + f.format(ganancia);
+        document.getElementById('vIva').innerText = "₡" + f.format(ivaMonto);
+        document.getElementById('vFinal').innerText = f.format(totalFinal);
+        document.getElementById('resVenta').style.display = 'block';
+    }
+
+    function calcPorcentaje() {
+        var o = parseFloat(document.getElementById('pOrig').value);
+        var r = parseFloat(document.getElementById('pRebaja').value);
+        if(!o || !r || r >= o) return alert("El precio original debe ser mayor al rebajado");
+        
+        var diferencia = o - r;
+        var porc = (diferencia / o) * 100;
+        
+        document.getElementById('pAhorro').innerText = "₡" + f.format(diferencia);
+        document.getElementById('pResultado').innerText = porc.toFixed(2) + "%";
+        document.getElementById('resPorc').style.display = 'block';
+    }
+
+    function calcRebaja() {
+        var p = parseFloat(document.getElementById('pActual').value);
+        var d = parseFloat(document.getElementById('pDesc').value);
+        if(!p || !d) return alert("Ingresa precio y porcentaje");
+        
+        var ahorro = p * (d / 100);
+        var final = p - ahorro;
+        
+        document.getElementById('fAhorro').innerText = "₡" + f.format(ahorro);
+        document.getElementById('fFinal').innerText = f.format(final);
+        document.getElementById('resFijo').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
